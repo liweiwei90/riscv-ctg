@@ -24,8 +24,11 @@ def nan_box(prefix,rs,flen,iflen):
     else:
         return (str(to_int(rs)|(to_int(prefix)<<iflen)),flen)
 
-def extract_frs_fields(reg,cvp,iflen):
-    if (iflen == 32):
+def extract_frs_fields(reg,cvp,iflen,bf16):
+    if bf16:
+        e_sz = 8
+        m_sz = 7
+    elif (iflen == 32):
         e_sz = 8
         m_sz = 23
     else:
@@ -48,14 +51,14 @@ def extract_frs_fields(reg,cvp,iflen):
     hex_val1 = '0x' + size_string.format(int(bin_val1, 2))
     return int(hex_val1,16)
 
-def merge_fields_f(val_vars,cvp,flen,iflen,merge):
+def merge_fields_f(val_vars,cvp,flen,iflen,merge,bf16):
     nan_box = False
     if flen > iflen:
         nan_box = True
     fdict = {}
     for var in val_vars:
         if var in num_dict and merge:
-            fdict[var] = extract_frs_fields(num_dict[var],cvp,iflen)
+            fdict[var] = extract_frs_fields(num_dict[var],cvp,iflen,bf16)
             if nan_box:
                 nan_var = 'rs{0}_nan_prefix'.format(num_dict[var])
                 regex = val_regex.format(nan_var.replace("_","\\_"),nan_var)

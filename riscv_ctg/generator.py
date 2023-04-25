@@ -13,7 +13,7 @@ import struct
 import sys
 import itertools
 
-one_operand_finstructions = ["fsqrt.s","fmv.x.w","fcvt.wu.s","fcvt.w.s","fclass.s","fcvt.l.s","fcvt.lu.s","fcvt.s.l","fcvt.s.lu"]
+one_operand_finstructions = ["fsqrt.s","fmv.x.w","fcvt.wu.s","fcvt.w.s","fclass.s","fcvt.l.s","fcvt.lu.s","fcvt.s.l","fcvt.s.lu", "fcvt.bf16.s", "fcvt.s.bf16"]
 two_operand_finstructions = ["fadd.s","fsub.s","fmul.s","fdiv.s","fmax.s","fmin.s","feq.s","flt.s","fle.s","fsgnj.s","fsgnjn.s","fsgnjx.s"]
 three_operand_finstructions = ["fmadd.s","fmsub.s","fnmadd.s","fnmsub.s"]
 
@@ -371,6 +371,7 @@ class Generator():
         if 'val_comb' not in cgf:
             return []
         val_comb = []
+        bf16 = 0
 
         conds = list(cgf['val_comb'].keys())
         inds = set(range(len(conds)))
@@ -378,6 +379,10 @@ class Generator():
         if 'fcvt' in self.opcode or 'fmv' in self.opcode:
             if self.opcode.split(".")[-1] in ['x','w','wu','l','lu']:
                 merge = "fmv.x.w" in self.opcode
+
+        if 'fcvt.s.bf16' in self.opcode:
+            bf16 = 1
+
         while inds:
             req_val_comb = conds[inds.pop()]
             if("#nosat" in req_val_comb):
@@ -389,7 +394,7 @@ class Generator():
                 if self.is_fext:
 	                # fs + fe + fm -> Combiner Script
                     try:
-                        d = merge_fields_f(self.val_vars,req_val_comb,self.flen,self.iflen,merge)
+                        d = merge_fields_f(self.val_vars,req_val_comb,self.flen,self.iflen,merge,bf16)
                     except ExtractException as e:
                         logger.warning("Valcomb skip: "+str(e))
                         continue
@@ -955,7 +960,7 @@ class Generator():
                                 if self.is_fext:
                                     instr_dict[i]['flagreg'] = available_reg[1]
                                 instr_dict[i]['val_section'].append(
-                                        template.substitute(val=dval[0],width=dval[1]))
+                                        template.substitute(val=hex(int(dval[0])),width=dval[1]))
                                 instr_dict[i]['load_instr'] = self.opnode['val']['load_instr']
                     available_reg = regset.copy()
                     available_reg.remove('x0')
@@ -982,7 +987,7 @@ class Generator():
                             if self.is_fext:
                                 instr_dict[i]['flagreg'] = available_reg[1]
                             instr_dict[i]['val_section'].append(
-                                    template.substitute(val=dval[0],width=dval[1]))
+                                    template.substitute(val=hex(int(dval[0])),width=dval[1]))
                             instr_dict[i]['load_instr'] = self.opnode['val']['load_instr']
             return instr_dict
         else:

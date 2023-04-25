@@ -124,18 +124,20 @@
 #endif
 
 #define NAN_BOXED(__val__,__width__,__max__)    \
-    .if __width__ == 32                        ;\
+    .if __width__ == 16                        ;\
+        .hword __val__                         ;\
+    .elseif __width__ == 32                    ;\
         .word __val__                          ;\
     .else                                      ;\
         .dword __val__                         ;\
     .endif                                     ;\
     .if __max__ > __width__                    ;\
-        .set pref_bytes,(__max__-__width__)/32 ;\
+        .set pref_bytes,(__max__-__width__)/16 ;\
     .else                                      ;\
         .set pref_bytes, 0                     ;\
     .endif                                     ;\
     .rept pref_bytes                           ;\
-        .word 0xffffffff                       ;\
+        .hword 0xffff                          ;\
     .endr                                      ;
 
 

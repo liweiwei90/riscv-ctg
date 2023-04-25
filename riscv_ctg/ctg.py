@@ -38,7 +38,10 @@ def create_test(usage_str, node,label,base_isa,max_inst, op_template, randomize,
                     logger.warning("Skipping {0} since its not supported in current FLEN({1}):".format(\
                             opcode, flen))
                     return
-                iflen = min(op_node['flen'])
+                if "fcvt.s.bf16" in opcode:
+                    iflen = 16
+                else:
+                    iflen = min(op_node['flen'])
             fprefix = os.path.join(out_dir,str(label))
             logger.info('Generating Test for :' + str(label) +"-" + opcode)
             formattype  = op_node['formattype']
