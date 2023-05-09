@@ -207,7 +207,7 @@ class Generator():
 
 
         is_nan_box = False
-        is_fext = any(['F' in x or 'D' in x for x in opnode['isa']])
+        is_fext = any(['F' in x or 'D' in x or 'Zfinx' or 'Zdinx' for x in opnode['isa']])
 
         if is_fext:
             if fl>ifl:
